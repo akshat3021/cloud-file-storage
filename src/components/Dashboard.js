@@ -1,20 +1,41 @@
 import React from 'react';
 
 function Dashboard() {
-  // This function will handle the logout process
   const handleLogout = () => {
     console.log('User is logging out...');
-    // Later, Yasharth's Firebase logout function will be called here.
+    // Yasharth's Firebase logout function will be called here.
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      console.log('Selected file:', file.name);
+      // Gagandeep's file upload function will be called here.
+    }
   };
 
   return (
     <div>
-      <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
         <h1>Dashboard</h1>
         <button onClick={handleLogout}>Logout</button>
       </header>
       <hr />
-      <p>This is where the user's files will be displayed.</p>
+
+      {/* --- File Upload Section --- */}
+      <div>
+        <h2>Upload a New File</h2>
+        <input type="file" onChange={handleFileChange} />
+      </div>
+
+      <hr />
+
+      {/* --- File List Section --- */}
+      <div>
+        <h2>Your Files</h2>
+        <p>File list will appear here...</p>
+        {/* Later, we will map over user's files and display them. */}
+      </div>
     </div>
   );
 }

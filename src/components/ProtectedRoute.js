@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 const isAuthenticated = () => {
   // For testing, we'll pretend the user is NOT logged in.
   // Change this to 'true' to test the logged-in state.
-  return false;
+  return true;
 };
 
 function ProtectedRoute({ children }) {
