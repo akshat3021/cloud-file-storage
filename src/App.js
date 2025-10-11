@@ -2,15 +2,24 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
-import Signup from './components/Signup'; // 1. Import Signup
+import Signup from './components/Signup';
+import ProtectedRoute from './components/ProtectedRoute'; // 1. Import ProtectedRoute
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/signup" element={<Signup />} /> {/* 2. Add the new route */}
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Dashboard />} />
+        {/* 2. Wrap the Dashboard in the ProtectedRoute component */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
