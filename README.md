@@ -73,3 +73,17 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 # cloud-file-storage
 A Cloud-based File Storage System built by Team Avengers using React and Firebase
 >>>>>>> 7b42a1686d792bfe9891cbaf1c8bd06b3498933b
+
+## Supabase Backend Setup
+
+This project uses Supabase for its backend services.
+
+### Database Tables
+- A `files` table has been created to store file metadata.
+
+### Row Level Security (RLS)
+Row Level Security is enabled on the `files` table with the following policies:
+- Users can only view their own files.
+- Users can only insert files with their own `user_id`.
+- Users can only update their own files.
+- Users can only delete their own files.
