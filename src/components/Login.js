@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // 1. Import Link
+import { Link, useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { supabase } from '../supabaseClient'; // 2. Import supabase
 
 function Login() {
-  // ... (keep all the existing state and handleSubmit logic) ...
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // 3. Initialize the navigate function
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -15,21 +17,32 @@ function Login() {
       setError('Email and password cannot be empty.');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error;
+
+      // If login is successful, redirect to the dashboard
+      navigate('/');
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-
-    console.log('Validation passed! Logging in with:', { email, password });
   };
-
 
   return (
     <div>
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        {/* ... (keep the form inputs) ... */}
         {error && <p style={{ color: 'red' }}>{error}</p>}
+        {/* ... keep all the input fields ... */}
         <div>
           <label>Email</label>
           <input
@@ -48,9 +61,10 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
-      {/* 2. Add the link below the form */}
       <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
     </div>
   );

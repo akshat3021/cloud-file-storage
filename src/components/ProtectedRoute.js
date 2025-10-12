@@ -1,17 +1,15 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-
-const isAuthenticated = () => {
-    // Placeholder authentication check
-  return true;
-};
-
+import { useAuth } from '../context/AuthContext'; 
 function ProtectedRoute({ children }) {
-  if (!isAuthenticated()) {
-    // If the user is not authenticated, redirect them to the login page.
+  const { user } = useAuth(); 
+
+  if (!user) {
+   
     return <Navigate to="/login" />;
   }
-  return children; // If authenticated, show the component (e.g., the Dashboard).
+
+  return children; 
 }
 
 export default ProtectedRoute;

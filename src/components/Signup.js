@@ -1,35 +1,56 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // 1. Import Link
+import { Link } from 'react-router-dom';
+import { supabase } from '../supabaseClient'; // 1. Import the supabase client
 
 function Signup() {
-  // ... (keep all the existing state and handleSubmit logic) ...
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // For disabling button on submit
+  const [message, setMessage] = useState(''); // For success messages
 
-  const handleSubmit = (e) => {
+  // 2. Update the handleSubmit function
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
 
+    // Client-side validation
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
     if (password.length < 6) {
-        setError('Password must be at least 6 characters long.');
-        return;
+      setError('Password must be at least 6 characters long.');
+      return;
     }
 
-    console.log('Validation passed! Signing up with:', { email, password });
+    try {
+      setLoading(true); // Disable button
+      const { error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error; // If Supabase returns an error, catch it
+
+      setMessage('Sign up successful! Please check your email to verify your account.');
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false); // Re-enable button
+    }
   };
 
   return (
     <div>
       <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
-        {/* ... (keep the form inputs) ... */}
         {error && <p style={{ color: 'red' }}>{error}</p>}
+        {message && <p style={{ color: 'green' }}>{message}</p>}
+        {/* ... (keep all the input fields) ... */}
         <div>
           <label>Email</label>
           <input
@@ -60,9 +81,10 @@ function Signup() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
-        <button type="submit">Sign Up</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Signing up...' : 'Sign Up'}
+        </button>
       </form>
-      {/* 2. Add the link below the form */}
       <p>Already have an account? <Link to="/login">Login</Link></p>
     </div>
   );
