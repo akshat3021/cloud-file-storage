@@ -1,46 +1,32 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // 1. Import the supabase client
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // For disabling button on submit
-  const [message, setMessage] = useState(''); // For success messages
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
-  // 2. Update the handleSubmit function
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
-
-    // Client-side validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true); // Disable button
-      const { error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-      });
-
-      if (error) throw error; // If Supabase returns an error, catch it
-
-      setMessage('Sign up successful! Please check your email to verify your account.');
-
+      await signUp(email, password, username, adminCode);
+      setMessage('Sign up successful! Please check your email to verify.');
+      setTimeout(() => navigate('/login'), 3000);
     } catch (error) {
       setError(error.message);
     } finally {
-      setLoading(false); // Re-enable button
+      setLoading(false);
     }
   };
 
@@ -50,36 +36,30 @@ function Signup() {
       <form onSubmit={handleSubmit}>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {message && <p style={{ color: 'green' }}>{message}</p>}
-        {/* ... (keep all the input fields) ... */}
+        
+        {}
+        <div>
+          <label>Username</label>
+          <input
+            type="text"
+            required
+            placeholder="Choose a username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+
         <div>
           <label>Email</label>
-          <input
-            type="email"
-            required
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
           <label>Password</label>
-          <input
-            type="password"
-            required
-            placeholder="Choose a password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         <div>
-          <label>Confirm Password</label>
-          <input
-            type="password"
-            required
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <label>Admin Code (optional)</label>
+          <input type="text" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} />
         </div>
         <button type="submit" disabled={loading}>
           {loading ? 'Signing up...' : 'Sign Up'}

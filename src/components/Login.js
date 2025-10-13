@@ -1,73 +1,75 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Import useNavigate
-import { supabase } from '../supabaseClient'; // 2. Import supabase
+import { useState } from 'react';
+import { signInUser } from '../auth';
+import { getUserProfile } from '../user';
+import { useNavigate, Link } from 'react-router-dom';
 
-function Login() {
+const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // 3. Initialize the navigate function
+  const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError(null);
+    setIsLoading(true);
 
-    if (!email || !password) {
-      setError('Email and password cannot be empty.');
-      return;
+    const { data, error: signInError } = await signInUser(email, password);
+
+    if (signInError) {
+      setError(signInError.message);
+    } else if (data.user) {
+      const profile = await getUserProfile();
+      if (profile && profile.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     }
-
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (error) throw error;
-
-      // If login is successful, redirect to the dashboard
-      navigate('/');
-
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+    
+    setIsLoading(false);
   };
 
   return (
     <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {/* ... keep all the input fields ... */}
+      <form onSubmit={handleLogin}>
+        <h2>Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <div>
-          <label>Email</label>
           <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <button type="button" onClick={() => setShowPassword(!showPassword)}>
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
         </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
+        
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-      <p>Don't have an account? <Link to="/signup">Sign Up</Link></p>
+
+      {}
+      <p>
+        <Link to="/forgot-password">Forgot your password?</Link>
+      </p>
+      <p>
+        Don't have an account? <Link to="/signup">Sign Up</Link>
+      </p>
     </div>
   );
-}
+};
 
 export default Login;

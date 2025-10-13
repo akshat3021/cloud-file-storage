@@ -1,26 +1,42 @@
-import React from 'react';
-import { useAuth } from '../context/AuthContext'; // 1. Import useAuth
-import { useNavigate } from 'react-router-dom';   // 2. Import useNavigate
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { getUserProfile } from '../user';
+import FileItem from './FileItem';
 
 function Dashboard() {
-  const { signOut } = useAuth(); // 3. Get the signOut function
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (user) {
+        const userProfile = await getUserProfile(user);
+        setProfile(userProfile);
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      // Redirect to the login page after successful logout
       navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error.message);
     }
   };
 
-  // ... (The rest of your Dashboard component code remains the same)
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('Selected file:', file.name);
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleUpload = () => {
+    if (selectedFile) {
+      console.log('Uploading file:', selectedFile.name);
+      alert(`The upload functionality for "${selectedFile.name}" is not connected yet.`);
     }
   };
 
@@ -29,18 +45,30 @@ function Dashboard() {
     { id: 2, name: 'Team-Photo.jpg', size: 850 },
   ];
 
-
   return (
     <div>
       <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
-        <h1>Dashboard</h1>
-        <button onClick={handleLogout}>Logout</button>
+        {}
+        <h1>{profile ? `${profile.username}'s Dashboard` : 'Dashboard'}</h1>
+        <div>
+          {}
+          {profile && <span style={{ marginRight: '15px' }}>Role: {profile.role}</span>}
+          <Link to="/profile">
+            <button>My Profile</button>
+          </Link>
+          <button onClick={handleLogout} style={{ marginLeft: '10px' }}>Logout</button>
+        </div>
       </header>
       <hr />
 
       <div>
         <h2>Upload a New File</h2>
         <input type="file" onChange={handleFileChange} />
+        {selectedFile && (
+          <button onClick={handleUpload} style={{ marginLeft: '10px' }}>
+            Upload
+          </button>
+        )}
       </div>
 
       <hr />
@@ -55,7 +83,4 @@ function Dashboard() {
   );
 }
 
-// You will need to import FileItem if it's not already
-import FileItem from './FileItem';
-
-export default Dashboard;
+export default Dashboard;                            
