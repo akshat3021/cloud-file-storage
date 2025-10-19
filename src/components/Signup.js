@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Import useNavigate
-import { supabase } from '../supabaseClient';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // 1. Use the auth hook
 
 function Signup() {
-  const [username, setUsername] = useState(''); // 2. Add state for username
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [adminCode, setAdminCode] = useState(''); // For admin sign up
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // 3. Initialize navigate
+  const navigate = useNavigate();
+  const { signUp } = useAuth(); // 2. Get the new signUp function from context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Client-side validation
+    // --- Client-side validation ---
     if (!username) {
       setError('Username is required.');
       return;
@@ -28,25 +30,16 @@ function Signup() {
       setError('Password must be at least 6 characters long.');
       return;
     }
+    // --- End of validation ---
 
     try {
       setLoading(true);
       
-      // 4. Update the signUp call to include the username as metadata
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            username: username,
-          }
-        }
-      });
-
-      if (error) throw error;
+      // 3. Call the single signUp function from context
+      // This function now handles both auth and profile creation
+      await signUp(email, password, username, adminCode || null); 
       
-      // If sign up is successful, redirect to the login page
-      alert('Sign up successful! Please check your email to verify your account.');
+      alert('Sign up successful! Please check your email for verification.');
       navigate('/login');
 
     } catch (error) {
@@ -62,7 +55,7 @@ function Signup() {
       <form onSubmit={handleSubmit}>
         {error && <p style={{ color: 'red' }}>{error}</p>}
         
-        {/* 5. Add the new Username input field */}
+        {/* Username Input */}
         <div>
           <label>Username</label>
           <input
@@ -74,6 +67,7 @@ function Signup() {
           />
         </div>
 
+        {/* Email Input */}
         <div>
           <label>Email</label>
           <input
@@ -84,6 +78,8 @@ function Signup() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+
+        {/* Password Input */}
         <div>
           <label>Password</label>
           <input
@@ -94,6 +90,8 @@ function Signup() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        {/* Confirm Password Input */}
         <div>
           <label>Confirm Password</label>
           <input
@@ -102,6 +100,17 @@ function Signup() {
             placeholder="Confirm your password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+        
+        {/* Admin Code Input (Optional) */}
+        <div>
+          <label>Admin Code (Optional)</label>
+          <input
+            type="text"
+            placeholder="Enter admin code"
+            value={adminCode}
+            onChange={(e) => setAdminCode(e.target.value)}
           />
         </div>
         
