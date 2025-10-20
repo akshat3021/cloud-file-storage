@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient'; // 1. Import supabase directly
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Link from '@mui/material/Link';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- UPDATED HANDLELOGIN FUNCTION ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      // Step 1: Sign in the user using Supabase auth
       const { data: loginData, error: signInError } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -25,78 +29,97 @@ function Login() {
 
       if (signInError) throw signInError;
 
-      // Step 2: If login is successful, get the user's profile to check their role
       if (loginData.user) {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('role') // Only fetch the role
-          .eq('id', loginData.user.id) // Match the profile ID to the logged-in user's ID
-          .single(); // Expect only one profile row
+          .select('role')
+          .eq('id', loginData.user.id)
+          .single();
 
         if (profileError) {
-          // Handle cases where profile might not exist (though trigger should prevent this)
           console.error("Error fetching profile after login:", profileError);
-          navigate('/'); // Default to user dashboard if profile fetch fails
+          navigate('/');
         } else {
-          // Step 3: Redirect based on the fetched role
           if (profile?.role === 'admin') {
-            navigate('/admin-dashboard'); // Redirect admins
+            navigate('/admin-dashboard');
           } else {
-            navigate('/'); // Redirect regular users to the main dashboard
+            navigate('/');
           }
         }
       } else {
-        // Handle unexpected case where login succeeds but no user data is returned
-        console.warn("Login successful but no user data returned.");
-        navigate('/'); // Default redirect
+        navigate('/');
       }
 
-    } catch (err) { // Catch errors from either signIn or profile fetch
+    } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
-  // --- END OF UPDATED HANDLELOGIN FUNCTION ---
 
   return (
-    <div>
-      <form onSubmit={handleLogin}>
-        <h2>Login</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required // Good to add basic required validation
-        />
-        <div>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Login
+        </Typography>
+
+        <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required // Good to add basic required validation
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)}>
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <Alert severity="error" sx={{ width: '100%', mt: 1 }}>{error}</Alert>}
 
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+          </Button>
 
-      <p>
-        <Link to="/forgot-password">Forgot your password?</Link>
-      </p>
-      <p>
-        Don't have an account? <Link to="/signup">Sign Up</Link>
-      </p>
-    </div>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+             <Link component={RouterLink} to="/forgot-password" variant="body2">
+                Forgot password?
+              </Link>
+             <Link component={RouterLink} to="/signup" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

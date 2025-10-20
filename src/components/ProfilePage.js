@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import { Link as RouterLink } from 'react-router-dom'; // Removed useNavigate import
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Link from '@mui/material/Link';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ProfilePage() {
-  const { user } = useAuth(); // Get the current user
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  // Removed navigate variable
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [username, setUsername] = useState('');
   const [role, setRole] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  // 1. Fetch the user's current profile data when the page loads
   useEffect(() => {
     const fetchProfile = async () => {
+      setError('');
+      setMessage('');
       try {
         setLoading(true);
-        if (!user) return; // Wait until the user is loaded
+        if (!user) return;
 
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, role') // Fetches these columns
-          .eq('id', user.id) // Get the profile for the logged-in user
-          .single(); // We only expect one row
+          .select('username, role')
+          .eq('id', user.id)
+          .single();
 
         if (error) throw error;
 
@@ -29,85 +41,125 @@ function ProfilePage() {
           setUsername(data.username);
           setRole(data.role);
         }
-      } catch (error) {
-        alert(error.message);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching profile:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [user]); // Re-run this effect if the user object changes
+  }, [user]);
 
-  // 2. Handle the form submission to update the profile
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    setError('');
+    setMessage('');
 
     try {
-      setLoading(true);
+      setUpdating(true);
       const { error } = await supabase
         .from('profiles')
-        .update({ username: username, role: role }) // Update username and role
-        .eq('id', user.id); // For the current user
+        .update({ username: username, role: role })
+        .eq('id', user.id);
 
       if (error) throw error;
-      
-      alert('Profile updated successfully!');
-      navigate('/'); // Go back to dashboard after update
-    } catch (error) {
-      alert(error.message);
+
+      setMessage('Profile updated successfully!');
+      // Removed navigate call
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
 
   if (loading) {
-    return <p>Loading profile...</p>;
+    return (
+      <Container component="main" maxWidth="xs" sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
   }
 
   return (
-    <div>
-      <h2>Your Profile</h2>
-      <form onSubmit={handleUpdateProfile}>
-        <div>
-          <label htmlFor="email">Email</label>
-          {/* Email is from auth and cannot be changed here */}
-          <input id="email" type="text" value={user.email} disabled />
-        </div>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Your Profile
+        </Typography>
+
+        <Box component="form" onSubmit={handleUpdateProfile} noValidate sx={{ mt: 3 }}>
+          <TextField
+            margin="normal"
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            value={user?.email || ''}
+            disabled
+            InputProps={{
+              readOnly: true,
+            }}
+            variant="filled"
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
             id="username"
-            type="text"
+            label="Username"
+            name="username"
+            autoComplete="username"
             value={username || ''}
             onChange={(e) => setUsername(e.target.value)}
           />
-        </div>
-        <div>
-          <label htmlFor="role">Role</label>
-          <input
+          <TextField
+            margin="normal"
+            fullWidth
             id="role"
-            type="text"
+            label="Role"
+            name="role"
             value={role || ''}
-            onChange={(e) => setRole(e.target.value)}
+            disabled
+            InputProps={{
+              readOnly: true,
+            }}
+            variant="filled"
           />
-        </div>
-        <div>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Update Profile'}
-          </button>
-        </div>
-      </form>
 
-      <hr />
+          {message && <Alert severity="success" sx={{ width: '100%', mt: 2 }}>{message}</Alert>}
+          {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
 
-      {/* 3. Link to your Update Password page */}
-      <Link to="/update-password">
-        <button>Change Password</button>
-      </Link>
-      <br />
-      <Link to="/">Back to Dashboard</Link>
-    </div>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={updating}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {updating ? 'Saving...' : 'Update Profile'}
+          </Button>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <Link component={RouterLink} to="/update-password" variant="body2">
+              Change Password
+            </Link>
+            <Link component={RouterLink} to="/" variant="body2">
+              Back to Dashboard
+            </Link>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   );
 }
 

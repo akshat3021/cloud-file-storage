@@ -1,33 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getAllUserProfiles, updateUserRole, deleteUserProfile } from '../admin'; // 1. Import deleteUserProfile
+import { getAllUserProfiles, updateUserRole, deleteUserProfile } from '../admin';
 import { getUserProfile } from '../user';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function AdminDashboard() {
-  const { user, signOut } = useAuth(); 
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); 
-  const [isAdmin, setIsAdmin] = useState(false); 
+  const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // ... (keep your existing useEffect logic to check admin and fetch users) ...
-     const checkAdminAndFetchUsers = async () => {
-      if (!user) { 
+    const checkAdminAndFetchUsers = async () => {
+      if (!user) {
         setLoading(false);
         setError("Please log in.");
         return;
       }
       try {
         setLoading(true);
-        setError(null); 
-        const currentUserProfile = await getUserProfile(user); 
+        setError(null);
+        const currentUserProfile = await getUserProfile(user);
         if (currentUserProfile?.role !== 'admin') {
            setError("Access denied. You do not have permission to view this page.");
            setIsAdmin(false);
-           setUsers([]); 
+           setUsers([]);
         } else {
            setIsAdmin(true);
            const userList = await getAllUserProfiles();
@@ -35,16 +53,15 @@ function AdminDashboard() {
         }
       } catch (err) {
           setError(err.message || "An error occurred.");
-          setUsers([]); 
+          setUsers([]);
       } finally {
         setLoading(false);
       }
     };
     checkAdminAndFetchUsers();
-  }, [user]); 
+  }, [user]);
 
   const handleLogout = async () => {
-    // ... (keep existing logout logic) ...
     try {
       await signOut();
       navigate('/login');
@@ -54,120 +71,123 @@ function AdminDashboard() {
   };
 
   const handleRoleChange = async (userIdToUpdate, newRole) => {
-    // ... (keep existing role change logic) ...
-     if (!isAdmin) return; 
-    if (userIdToUpdate === user.id) {
-        alert("Admins cannot change their own role from this interface.");
-        return;
-    }
+    if (!isAdmin || userIdToUpdate === user.id) return;
     try {
       const updatedProfile = await updateUserRole(userIdToUpdate, newRole);
-      setUsers(currentUsers => 
-        currentUsers.map(u => 
+      setUsers(currentUsers =>
+        currentUsers.map(u =>
           u.id === userIdToUpdate ? { ...u, role: updatedProfile.role } : u
         )
       );
-      alert('User role updated successfully!');
     } catch (err) {
       alert(`Error updating role: ${err.message}`);
     }
   };
 
-  // --- 2. ADD THIS FUNCTION to handle user deletion ---
   const handleDeleteUser = async (userIdToDelete, usernameToDelete) => {
-     if (!isAdmin) return; // Extra safety check
-     if (userIdToDelete === user.id) {
-        alert("Admins cannot delete their own account from this interface.");
-        return;
-    }
-    if (!window.confirm(`Are you sure you want to delete user: ${usernameToDelete}? This action cannot be undone.`)) {
-        return;
-    }
-    try {
+     if (!isAdmin || userIdToDelete === user.id) return;
+     if (!window.confirm(`Are you sure you want to delete user: ${usernameToDelete}? This action cannot be undone.`)) return;
+     try {
         await deleteUserProfile(userIdToDelete);
-        // Remove the user from the local state
         setUsers(currentUsers => currentUsers.filter(u => u.id !== userIdToDelete));
         alert('User profile deleted successfully!');
-    } catch (err) {
+     } catch (err) {
         alert(`Error deleting user: ${err.message}`);
-    }
+     }
   };
-  // --- END OF NEW FUNCTION ---
 
-  if (loading) { return <p>Loading...</p>; }
-  if (error) { /* ... (keep error display logic) ... */ 
+  if (loading) { return <Container sx={{mt:4, textAlign: 'center'}}><CircularProgress /></Container>; }
+  if (error) {
       return (
-          <div>
-              <p style={{ color: 'red' }}>Error: {error}</p>
-              <button onClick={handleLogout}>Logout</button> 
-          </div>
+          <Container sx={{mt:4}}>
+              <Alert severity="error">{error}</Alert>
+              <Button onClick={handleLogout} sx={{mt: 2}}>Logout</Button>
+          </Container>
       );
   }
-  if (!isAdmin) { /* ... (keep access denied logic) ... */ 
+  if (!isAdmin) {
        return (
-           <div>
-               <p style={{ color: 'red' }}>Access Denied. You are not an administrator.</p>
-               <button onClick={() => navigate('/')}>Go to Dashboard</button>
-               <button onClick={handleLogout} style={{marginLeft: '10px'}}>Logout</button> 
-           </div>
+           <Container sx={{mt: 4}}>
+               <Alert severity="warning">Access Denied. You are not an administrator.</Alert>
+               <Button onClick={() => navigate('/')} sx={{mt: 2}}>Go to Dashboard</Button>
+               <Button onClick={handleLogout} sx={{mt: 2, ml: 1}}>Logout</Button>
+           </Container>
        );
   }
 
   return (
-    <div>
-      {/* ... (keep header) ... */}
-       <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
-        <h1>Admin Dashboard</h1>
-        <button onClick={handleLogout}>Logout</button>
-      </header>
-      <hr />
-      
-      <h2>User Management</h2>
-        <table border="1" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ padding: '8px', border: '1px solid black' }}>User ID</th>
-              <th style={{ padding: '8px', border: '1px solid black' }}>Username</th> 
-              <th style={{ padding: '8px', border: '1px solid black' }}>Role</th>
-              <th style={{ padding: '8px', border: '1px solid black' }}>Actions</th> 
-            </tr>
-          </thead>
-          <tbody>
-            {users.length > 0 ? (
-              users.map(userItem => ( 
-                <tr key={userItem.id}>
-                  <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.id}</td>
-                  <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.username}</td> 
-                  <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.role}</td>
-                  <td style={{ padding: '8px', border: '1px solid black' }}>
-                    {/* Role Change Dropdown */}
-                    {userItem.id !== user.id && ( 
-                      <select 
-                        value={userItem.role} 
-                        onChange={(e) => handleRoleChange(userItem.id, e.target.value)}
-                        style={{ marginRight: '10px' }}
-                      >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    )}
-                    {/* --- 3. ADD Delete Button --- */}
-                    {userItem.id !== user.id && ( 
-                       <button onClick={() => handleDeleteUser(userItem.id, userItem.username)}>
-                           Delete User
-                       </button>
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" style={{ padding: '8px', textAlign: 'center' }}>No users found.</td> 
-              </tr>
-            )}
-          </tbody>
-        </table>
-    </div>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Admin Dashboard
+          </Typography>
+          <Button color="inherit" onClick={handleLogout}>Logout</Button>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          User Management
+        </Typography>
+
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="user management table">
+            <TableHead>
+              <TableRow>
+                <TableCell>User ID</TableCell>
+                <TableCell>Username</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {users.length > 0 ? (
+                users.map((userItem) => (
+                  <TableRow
+                    key={userItem.id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {userItem.id}
+                    </TableCell>
+                    <TableCell>{userItem.username}</TableCell>
+                    <TableCell>{userItem.role}</TableCell>
+                    <TableCell align="right">
+                      {userItem.id !== user.id && (
+                        <Select
+                          value={userItem.role}
+                          onChange={(e) => handleRoleChange(userItem.id, e.target.value)}
+                          size="small"
+                          sx={{ minWidth: 100, mr: 1 }}
+                        >
+                          <MenuItem value="user">User</MenuItem>
+                          <MenuItem value="admin">Admin</MenuItem>
+                        </Select>
+                      )}
+                      {userItem.id !== user.id && (
+                         <IconButton
+                            aria-label="delete user"
+                            onClick={() => handleDeleteUser(userItem.id, userItem.username)}
+                            color="error"
+                            size="small"
+                         >
+                            <DeleteIcon />
+                         </IconButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">No users found.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Container>
+    </Box>
   );
 }
 

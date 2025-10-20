@@ -1,23 +1,32 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. Use the auth hook
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+// --- MUI Imports ---
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Link from '@mui/material/Link';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
+// --- End MUI Imports ---
 
 function Signup() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [adminCode, setAdminCode] = useState(''); // For admin sign up
+  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth(); // 2. Get the new signUp function from context
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // --- Client-side validation ---
     if (!username) {
       setError('Username is required.');
       return;
@@ -30,18 +39,12 @@ function Signup() {
       setError('Password must be at least 6 characters long.');
       return;
     }
-    // --- End of validation ---
 
     try {
       setLoading(true);
-      
-      // 3. Call the single signUp function from context
-      // This function now handles both auth and profile creation
-      await signUp(email, password, username, adminCode || null); 
-      
+      await signUp(email, password, username, adminCode || null);
       alert('Sign up successful! Please check your email for verification.');
       navigate('/login');
-
     } catch (error) {
       setError(error.message);
     } finally {
@@ -50,76 +53,97 @@ function Signup() {
   };
 
   return (
-    <div>
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit}>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        
-        {/* Username Input */}
-        <div>
-          <label>Username</label>
-          <input
-            type="text"
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Sign Up
+        </Typography>
+
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
             required
-            placeholder="Choose a username"
+            fullWidth
+            id="username"
+            label="Username"
+            name="username"
+            autoComplete="username"
+            autoFocus
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-        </div>
-
-        {/* Email Input */}
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
+          <TextField
+            margin="normal"
             required
-            placeholder="Enter your email"
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-
-        {/* Password Input */}
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
+          <TextField
+            margin="normal"
             required
-            placeholder="Choose a password"
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
-
-        {/* Confirm Password Input */}
-        <div>
-          <label>Confirm Password</label>
-          <input
-            type="password"
+          <TextField
+            margin="normal"
             required
-            placeholder="Confirm your password"
+            fullWidth
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            id="confirmPassword"
+            autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-        </div>
-        
-        {/* Admin Code Input (Optional) */}
-        <div>
-          <label>Admin Code (Optional)</label>
-          <input
-            type="text"
-            placeholder="Enter admin code"
+          <TextField
+            margin="normal"
+            fullWidth
+            id="adminCode"
+            label="Admin Code (Optional)"
+            name="adminCode"
             value={adminCode}
             onChange={(e) => setAdminCode(e.target.value)}
           />
-        </div>
-        
-        <button type="submit" disabled={loading}>
-          {loading ? 'Signing up...' : 'Sign Up'}
-        </button>
-      </form>
-      <p>Already have an account? <Link to="/login">Login</Link></p>
-    </div>
+
+          {error && <Alert severity="error" sx={{ width: '100%', mt: 1 }}>{error}</Alert>}
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {loading ? 'Signing up...' : 'Sign Up'}
+          </Button>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <Link component={RouterLink} to="/login" variant="body2">
+              Already have an account? Login
+            </Link>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   );
 }
 

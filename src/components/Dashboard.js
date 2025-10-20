@@ -1,23 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { getUserProfile } from '../user';
 import FileItem from './FileItem';
-import { supabase } from '../supabaseClient'; 
+import { supabase } from '../supabaseClient';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+// Removed IconButton, Link, TextField imports
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 
 function Dashboard() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
-
-  // State for file management
   const [selectedFile, setSelectedFile] = useState(null);
-  const [files, setFiles] = useState([]); 
+  const [files, setFiles] = useState([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [fileError, setFileError] = useState(null);
 
-  // useEffect for loading the profile
   useEffect(() => {
     const loadProfile = async () => {
       if (user) {
@@ -28,34 +36,31 @@ function Dashboard() {
     loadProfile();
   }, [user]);
 
-  // useEffect to fetch the user's files
   useEffect(() => {
     const fetchFiles = async () => {
       if (user) {
         try {
           setLoadingFiles(true);
-          setError(null);
+          setFileError(null);
           const { data, error } = await supabase
             .from('files')
             .select('*')
-            .eq('user_id', user.id); 
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
 
           if (error) throw error;
-          
           setFiles(data);
-        } catch (error) {
-          console.error('Error fetching files:', error.message);
-          setError(error.message);
+        } catch (err) {
+          console.error('Error fetching files:', err.message);
+          setFileError(err.message);
         } finally {
           setLoadingFiles(false);
         }
       }
     };
-    
     fetchFiles();
-  }, [user]); 
+  }, [user]);
 
-  // handleLogout function
   const handleLogout = async () => {
     try {
       await signOut();
@@ -69,7 +74,6 @@ function Dashboard() {
     setSelectedFile(e.target.files[0]);
   };
 
-  // handleUpload function
   const handleUpload = async () => {
     if (!selectedFile) {
       alert('Please select a file first!');
@@ -77,129 +81,131 @@ function Dashboard() {
     }
     try {
       setUploading(true);
+      setError(null);
       const file = selectedFile;
       const filePath = `${user.id}/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
-        .from('user-files') 
+        .from('user-files')
         .upload(filePath, file);
       if (uploadError) throw uploadError;
       const { data: newFileRecord, error: insertError } = await supabase
         .from('files')
-        .insert({
-          name: file.name,
-          size: file.size,
-          user_id: user.id,
-          path: filePath, 
-        })
-        .select() 
-        .single(); 
+        .insert({ name: file.name, size: file.size, user_id: user.id, path: filePath })
+        .select()
+        .single();
       if (insertError) throw insertError;
-      setFiles((prevFiles) => [...prevFiles, newFileRecord]);
-      setSelectedFile(null); 
-      alert('File uploaded successfully!');
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-      console.error('Error uploading file:', error);
+      setFiles((prevFiles) => [newFileRecord, ...prevFiles]);
+      setSelectedFile(null);
+      document.getElementById('file-input').value = null;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error uploading file:', err);
     } finally {
       setUploading(false);
     }
   };
 
-  // handleDeleteFile function
   const handleDeleteFile = async (file) => {
-    if (!window.confirm(`Are you sure you want to delete ${file.name}?`)) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to delete ${file.name}?`)) return;
     try {
-      const { error: storageError } = await supabase.storage
-        .from('user-files')
-        .remove([file.path]); 
+      setError(null);
+      const { error: storageError } = await supabase.storage.from('user-files').remove([file.path]);
       if (storageError) throw storageError;
-      const { error: dbError } = await supabase
-        .from('files')
-        .delete()
-        .eq('id', file.id); 
+      const { error: dbError } = await supabase.from('files').delete().eq('id', file.id);
       if (dbError) throw dbError;
       setFiles(files.filter((f) => f.id !== file.id));
-      alert('File deleted successfully!');
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-      console.error('Error deleting file:', error);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error deleting file:', err);
     }
   };
 
-  // --- NEW FUNCTION ---
-  // handleDownloadFile function
   const handleDownloadFile = async (file) => {
     try {
-      // 1. Get the file from Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('user-files')
-        .download(file.path); // 'path' is the column where we stored the file path
-
+      setError(null);
+      const { data, error } = await supabase.storage.from('user-files').download(file.path);
       if (error) throw error;
-
-      // 2. Create a temporary URL and trigger a browser download
       const blob = new Blob([data]);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.name; // Set the file name for the download
-      a.click(); // Click the link to start the download
-      window.URL.revokeObjectURL(url); // Clean up the temporary URL
-
-    } catch (error) {
-      alert(`Error: ${error.message}`);
-      console.error('Error downloading file:', error);
+      a.download = file.name;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error downloading file:', err);
     }
   };
 
-
   return (
-    <div>
-      {/* Header section (no changes) */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
-        <h1>{profile ? `${profile.username}'s Dashboard` : 'Dashboard'}</h1>
-        <div>
-          {profile && <span style={{ marginRight: '15px' }}>Role: {profile.role}</span>}
-          <Link to="/profile">
-            <button>My Profile</button>
-          </Link>
-          <button onClick={handleLogout} style={{ marginLeft: '10px' }}>Logout</button>
-        </div>
-      </header>
-      <hr />
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            {profile ? `${profile.username}'s Cloud Storage` : 'Cloud Storage'}
+          </Typography>
+          {profile && <Typography sx={{ mr: 2 }}>Role: {profile.role}</Typography>}
+          <Button color="inherit" component={RouterLink} to="/profile">My Profile</Button>
+          <Button color="inherit" onClick={handleLogout}>Logout</Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* Upload Section (no changes) */}
-      <div>
-        <h2>Upload a New File</h2>
-        <input type="file" onChange={handleFileChange} />
-        {selectedFile && (
-          <button onClick={handleUpload} disabled={uploading} style={{ marginLeft: '10px' }}>
-            {uploading ? 'Uploading...' : 'Upload'}
-          </button>
-        )}
-      </div>
-      <hr />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box sx={{ mb: 4, p: 2, border: '1px dashed grey', borderRadius: '4px' }}>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Upload a New File
+          </Typography>
+          <Stack direction="row" spacing={2} alignItems="center">
+             <Button
+                variant="contained"
+                component="label"
+                disabled={uploading}
+              >
+                Choose File
+                <input
+                  id="file-input"
+                  type="file"
+                  hidden
+                  onChange={handleFileChange}
+                />
+              </Button>
+             {selectedFile && <Typography variant="body1">{selectedFile.name}</Typography>}
+             {selectedFile && (
+                <Button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  variant="outlined"
+                  startIcon={uploading ? <CircularProgress size={20} /> : null}
+                >
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </Button>
+             )}
+          </Stack>
+          {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+        </Box>
 
-      {/* File List Section (UPDATED) */}
-      <div>
-        <h2>Your Files</h2>
-        {loadingFiles && <p>Loading your files...</p>}
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-        {!loadingFiles && !error && files.length === 0 && <p>You haven't uploaded any files yet.</p>}
-        
-        {/* --- UPDATED PART --- */}
-        {files.map(file => (
-          <FileItem 
-            key={file.id} 
-            file={file} 
-            onDelete={handleDeleteFile}
-            onDownload={handleDownloadFile} // Pass the download function
-          />
-        ))}
-      </div>
-    </div>
+        <Box>
+          <Typography variant="h5" component="h2" gutterBottom>
+            Your Files
+          </Typography>
+          {loadingFiles && <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}><CircularProgress /></Box>}
+          {fileError && <Alert severity="error" sx={{ mt: 2 }}>{fileError}</Alert>}
+          {!loadingFiles && !fileError && files.length === 0 && <Typography sx={{ mt: 2 }}>You haven't uploaded any files yet.</Typography>}
+
+          <Stack spacing={2} sx={{ mt: 2 }}>
+            {files.map(file => (
+              <FileItem
+                key={file.id}
+                file={file}
+                onDelete={handleDeleteFile}
+                onDownload={handleDownloadFile}
+              />
+            ))}
+          </Stack>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 
