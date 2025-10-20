@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getAllUserProfiles, updateUserRole } from '../admin'; // 1. Import updateUserRole
+import { getAllUserProfiles, updateUserRole, deleteUserProfile } from '../admin'; // 1. Import deleteUserProfile
 import { getUserProfile } from '../user';
 
 function AdminDashboard() {
@@ -13,8 +13,8 @@ function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false); 
 
   useEffect(() => {
-    const checkAdminAndFetchUsers = async () => {
-      // ... (keep your existing useEffect logic to fetch users) ...
+    // ... (keep your existing useEffect logic to check admin and fetch users) ...
+     const checkAdminAndFetchUsers = async () => {
       if (!user) { 
         setLoading(false);
         setError("Please log in.");
@@ -45,7 +45,7 @@ function AdminDashboard() {
 
   const handleLogout = async () => {
     // ... (keep existing logout logic) ...
-     try {
+    try {
       await signOut();
       navigate('/login');
     } catch (error) {
@@ -53,21 +53,15 @@ function AdminDashboard() {
     }
   };
 
-  // --- 2. ADD THIS FUNCTION to handle role change ---
   const handleRoleChange = async (userIdToUpdate, newRole) => {
-    if (!isAdmin) return; // Extra safety check
-
-    // Prevent admin from changing their own role via this UI
+    // ... (keep existing role change logic) ...
+     if (!isAdmin) return; 
     if (userIdToUpdate === user.id) {
         alert("Admins cannot change their own role from this interface.");
         return;
     }
-
     try {
-      // Call the function from admin.js
       const updatedProfile = await updateUserRole(userIdToUpdate, newRole);
-      
-      // Update the user list in the local state to reflect the change immediately
       setUsers(currentUsers => 
         currentUsers.map(u => 
           u.id === userIdToUpdate ? { ...u, role: updatedProfile.role } : u
@@ -78,8 +72,27 @@ function AdminDashboard() {
       alert(`Error updating role: ${err.message}`);
     }
   };
-  // --- END OF NEW FUNCTION ---
 
+  // --- 2. ADD THIS FUNCTION to handle user deletion ---
+  const handleDeleteUser = async (userIdToDelete, usernameToDelete) => {
+     if (!isAdmin) return; // Extra safety check
+     if (userIdToDelete === user.id) {
+        alert("Admins cannot delete their own account from this interface.");
+        return;
+    }
+    if (!window.confirm(`Are you sure you want to delete user: ${usernameToDelete}? This action cannot be undone.`)) {
+        return;
+    }
+    try {
+        await deleteUserProfile(userIdToDelete);
+        // Remove the user from the local state
+        setUsers(currentUsers => currentUsers.filter(u => u.id !== userIdToDelete));
+        alert('User profile deleted successfully!');
+    } catch (err) {
+        alert(`Error deleting user: ${err.message}`);
+    }
+  };
+  // --- END OF NEW FUNCTION ---
 
   if (loading) { return <p>Loading...</p>; }
   if (error) { /* ... (keep error display logic) ... */ 
@@ -116,7 +129,6 @@ function AdminDashboard() {
               <th style={{ padding: '8px', border: '1px solid black' }}>User ID</th>
               <th style={{ padding: '8px', border: '1px solid black' }}>Username</th> 
               <th style={{ padding: '8px', border: '1px solid black' }}>Role</th>
-              {/* --- 3. ADD 'Actions' header --- */}
               <th style={{ padding: '8px', border: '1px solid black' }}>Actions</th> 
             </tr>
           </thead>
@@ -127,17 +139,23 @@ function AdminDashboard() {
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.id}</td>
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.username}</td> 
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.role}</td>
-                  {/* --- 4. ADD buttons/dropdown for actions --- */}
                   <td style={{ padding: '8px', border: '1px solid black' }}>
-                    {/* Don't allow changing the current admin's role */}
+                    {/* Role Change Dropdown */}
                     {userItem.id !== user.id && ( 
                       <select 
                         value={userItem.role} 
                         onChange={(e) => handleRoleChange(userItem.id, e.target.value)}
+                        style={{ marginRight: '10px' }}
                       >
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                       </select>
+                    )}
+                    {/* --- 3. ADD Delete Button --- */}
+                    {userItem.id !== user.id && ( 
+                       <button onClick={() => handleDeleteUser(userItem.id, userItem.username)}>
+                           Delete User
+                       </button>
                     )}
                   </td>
                 </tr>
