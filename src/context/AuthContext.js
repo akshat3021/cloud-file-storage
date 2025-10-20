@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
     if (error) throw error;
     return data;
   }
-  
+
   async function signUp(email, password, username, adminCode) {
     const SECRET_ADMIN_CODE = "SUPER_SECRET_ADMIN_KEY";
     let userRole = 'user';
@@ -49,25 +49,24 @@ export function AuthProvider({ children }) {
       userRole = 'admin';
     }
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username: username,
+          role: userRole
+        },
+        user_metadata: {
+          role: userRole
+        }
+      }
     });
 
-    if (authError) throw authError;
+    if (error) throw error;
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({ 
-        id: authData.user.id,
-        username: username,
-        role: userRole 
-      });
-
-    if (profileError) throw profileError;
-    return authData;
+    return data;
   }
-
 
   const value = {
     user,

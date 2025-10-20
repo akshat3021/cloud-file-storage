@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { signInUser } from '../auth';
-import { getUserProfile } from '../user';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient'; // 1. Import supabase directly
 
-const Login = () => {
+function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -11,26 +10,54 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // --- UPDATED HANDLELOGIN FUNCTION ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    const { data, error: signInError } = await signInUser(email, password);
+    try {
+      // Step 1: Sign in the user using Supabase auth
+      const { data: loginData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-    if (signInError) {
-      setError(signInError.message);
-    } else if (data.user) {
-      const profile = await getUserProfile();
-      if (profile && profile.role === 'admin') {
-        navigate('/admin-dashboard');
+      if (signInError) throw signInError;
+
+      // Step 2: If login is successful, get the user's profile to check their role
+      if (loginData.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role') // Only fetch the role
+          .eq('id', loginData.user.id) // Match the profile ID to the logged-in user's ID
+          .single(); // Expect only one profile row
+
+        if (profileError) {
+          // Handle cases where profile might not exist (though trigger should prevent this)
+          console.error("Error fetching profile after login:", profileError);
+          navigate('/'); // Default to user dashboard if profile fetch fails
+        } else {
+          // Step 3: Redirect based on the fetched role
+          if (profile?.role === 'admin') {
+            navigate('/admin-dashboard'); // Redirect admins
+          } else {
+            navigate('/'); // Redirect regular users to the main dashboard
+          }
+        }
       } else {
-        navigate('/dashboard');
+        // Handle unexpected case where login succeeds but no user data is returned
+        console.warn("Login successful but no user data returned.");
+        navigate('/'); // Default redirect
       }
+
+    } catch (err) { // Catch errors from either signIn or profile fetch
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
+  // --- END OF UPDATED HANDLELOGIN FUNCTION ---
 
   return (
     <div>
@@ -41,6 +68,7 @@ const Login = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required // Good to add basic required validation
         />
         <div>
           <input
@@ -48,20 +76,20 @@ const Login = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required // Good to add basic required validation
           />
           <button type="button" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
-        
+
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        
+
         <button type="submit" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Login'}
         </button>
       </form>
 
-      {}
       <p>
         <Link to="/forgot-password">Forgot your password?</Link>
       </p>

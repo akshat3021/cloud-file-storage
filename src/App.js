@@ -24,7 +24,12 @@ function App() {
           {/* Protected Routes */}
           <Route path="/" element={ <ProtectedRoute><Dashboard /></ProtectedRoute> } />
           <Route path="/profile" element={ <ProtectedRoute><ProfilePage /></ProtectedRoute> } />
-          <Route path="/admin-dashboard" element={ <ProtectedRoute><AdminDashboard /></ProtectedRoute> } />
+          
+          {/* --- THIS LINE IS UPDATED --- */}
+          <Route 
+            path="/admin-dashboard" 
+            element={ <ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute> } 
+          />
 
           {/* Redirect */}
           <Route path="/dashboard" element={<Navigate to="/" />} />
@@ -34,4 +39,4 @@ function App() {
   );
 }
 
-export default App;                                          
+export default App;
