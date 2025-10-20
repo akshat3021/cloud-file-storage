@@ -1,60 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext'; // Make sure this path is correct
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { getAllUserProfiles } from '../admin'; // Make sure this path is correct
-import { getUserProfile } from '../user'; // Import getUserProfile
+import { getAllUserProfiles, updateUserRole } from '../admin'; // 1. Import updateUserRole
+import { getUserProfile } from '../user';
 
 function AdminDashboard() {
-  // --- FIX: Call useAuth() at the top level ---
   const { user, signOut } = useAuth(); 
-  // ---------------------------------------------
-  
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null); 
-  const [isAdmin, setIsAdmin] = useState(false); // State to track admin status
+  const [isAdmin, setIsAdmin] = useState(false); 
 
   useEffect(() => {
     const checkAdminAndFetchUsers = async () => {
-      if (!user) { // Check if user exists before proceeding
+      // ... (keep your existing useEffect logic to fetch users) ...
+      if (!user) { 
         setLoading(false);
         setError("Please log in.");
         return;
       }
-
       try {
         setLoading(true);
         setError(null); 
-
-        // 1. Check current user's role first
         const currentUserProfile = await getUserProfile(user); 
         if (currentUserProfile?.role !== 'admin') {
-           console.warn("Access denied: User is not an admin.");
            setError("Access denied. You do not have permission to view this page.");
            setIsAdmin(false);
            setUsers([]); 
         } else {
-           // 2. If user is admin, fetch all users
            setIsAdmin(true);
            const userList = await getAllUserProfiles();
            setUsers(userList);
         }
-        
       } catch (err) {
-          console.error("Error in AdminDashboard:", err);
           setError(err.message || "An error occurred.");
           setUsers([]); 
       } finally {
         setLoading(false);
       }
     };
-
     checkAdminAndFetchUsers();
-  }, [user]); // Re-run effect if the user object changes
+  }, [user]); 
 
   const handleLogout = async () => {
-    try {
+    // ... (keep existing logout logic) ...
+     try {
       await signOut();
       navigate('/login');
     } catch (error) {
@@ -62,11 +53,36 @@ function AdminDashboard() {
     }
   };
 
-  // Display loading or error messages early
-  if (loading) {
-      return <p>Loading...</p>;
-  }
-  if (error) {
+  // --- 2. ADD THIS FUNCTION to handle role change ---
+  const handleRoleChange = async (userIdToUpdate, newRole) => {
+    if (!isAdmin) return; // Extra safety check
+
+    // Prevent admin from changing their own role via this UI
+    if (userIdToUpdate === user.id) {
+        alert("Admins cannot change their own role from this interface.");
+        return;
+    }
+
+    try {
+      // Call the function from admin.js
+      const updatedProfile = await updateUserRole(userIdToUpdate, newRole);
+      
+      // Update the user list in the local state to reflect the change immediately
+      setUsers(currentUsers => 
+        currentUsers.map(u => 
+          u.id === userIdToUpdate ? { ...u, role: updatedProfile.role } : u
+        )
+      );
+      alert('User role updated successfully!');
+    } catch (err) {
+      alert(`Error updating role: ${err.message}`);
+    }
+  };
+  // --- END OF NEW FUNCTION ---
+
+
+  if (loading) { return <p>Loading...</p>; }
+  if (error) { /* ... (keep error display logic) ... */ 
       return (
           <div>
               <p style={{ color: 'red' }}>Error: {error}</p>
@@ -74,8 +90,7 @@ function AdminDashboard() {
           </div>
       );
   }
-  // If not loading, no error, but also not admin (handles edge case)
-  if (!isAdmin) {
+  if (!isAdmin) { /* ... (keep access denied logic) ... */ 
        return (
            <div>
                <p style={{ color: 'red' }}>Access Denied. You are not an administrator.</p>
@@ -85,11 +100,10 @@ function AdminDashboard() {
        );
   }
 
-
-  // Only render the table if loading is done, no errors, and user is admin
   return (
     <div>
-      <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
+      {/* ... (keep header) ... */}
+       <header style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', alignItems: 'center' }}>
         <h1>Admin Dashboard</h1>
         <button onClick={handleLogout}>Logout</button>
       </header>
@@ -102,20 +116,35 @@ function AdminDashboard() {
               <th style={{ padding: '8px', border: '1px solid black' }}>User ID</th>
               <th style={{ padding: '8px', border: '1px solid black' }}>Username</th> 
               <th style={{ padding: '8px', border: '1px solid black' }}>Role</th>
+              {/* --- 3. ADD 'Actions' header --- */}
+              <th style={{ padding: '8px', border: '1px solid black' }}>Actions</th> 
             </tr>
           </thead>
           <tbody>
             {users.length > 0 ? (
-              users.map(userItem => ( // Renamed map variable to avoid conflict
+              users.map(userItem => ( 
                 <tr key={userItem.id}>
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.id}</td>
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.username}</td> 
                   <td style={{ padding: '8px', border: '1px solid black' }}>{userItem.role}</td>
+                  {/* --- 4. ADD buttons/dropdown for actions --- */}
+                  <td style={{ padding: '8px', border: '1px solid black' }}>
+                    {/* Don't allow changing the current admin's role */}
+                    {userItem.id !== user.id && ( 
+                      <select 
+                        value={userItem.role} 
+                        onChange={(e) => handleRoleChange(userItem.id, e.target.value)}
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3" style={{ padding: '8px', textAlign: 'center' }}>No users found.</td>
+                <td colSpan="4" style={{ padding: '8px', textAlign: 'center' }}>No users found.</td> 
               </tr>
             )}
           </tbody>
