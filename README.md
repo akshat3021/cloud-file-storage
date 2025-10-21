@@ -1,89 +1,64 @@
-<<<<<<< HEAD
-# Getting Started with Create React App
+# Cloud Based File Storage System (Team Avengers)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A secure and modern web application for uploading, managing, and accessing your files from anywhere, built with React and Supabase.
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+* **User Authentication:** Secure Sign Up, Login, Logout, Password Reset.
+* **File Management:** Upload, Download, List, and Delete files.
+* **Role-Based Access:** Separate dashboards and permissions for Users and Admins.
+* **Admin Dashboard:** View and manage users (edit roles, delete users).
+* **Modern UI:** Styled using Material UI (MUI) with a dark theme.
 
-### `npm start`
+## 🛠️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* **Frontend:** React.js, React Router
+* **UI Library:** Material UI (MUI)
+* **Backend:** Supabase
+    * Authentication
+    * PostgreSQL Database (with Row Level Security)
+    * Storage
+* **Deployment:** Netlify
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Live Demo
 
-### `npm test`
+[https://filedalokhiseb.netlify.app/](https://filedalokhiseb.netlify.app/)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## ⚙️ Local Setup
 
-### `npm run build`
+Follow these steps to set up and run the project locally on your machine:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1.  **Clone the Repository:**
+    Open your terminal and run the following command:
+    ```bash
+    git clone [https://github.com/akshat3021/cloud-file-storage.git](https://github.com/akshat3021/cloud-file-storage.git)
+    cd cloud-file-storage
+    ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2.  **Install Dependencies:**
+    Install the necessary Node.js packages using npm:
+    ```bash
+    npm install
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3.  **Set Up Environment Variables:**
+    This project requires credentials to connect to the Supabase backend.
+    * Create a new file named `.env` in the root directory of the project (the same level as `package.json`).
+    * Add the following lines to the `.env` file, replacing the placeholder values with your actual Supabase Project URL and Anon Key:
+      ```env
+      REACT_APP_SUPABASE_URL=YOUR_SUPABASE_URL
+      REACT_APP_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+      ```
+    * You can find these keys in your Supabase project settings under **Settings > API**.
+    * **Important:** The `.env` file should **not** be committed to Git. Ensure your `.gitignore` file includes `.env`.
 
-### `npm run eject`
+4.  **Run the Development Server:**
+    Start the React development server:
+    ```bash
+    npm start
+    ```
+    The application should automatically open in your default web browser at `http://localhost:3000`.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📄 License
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# cloud-file-storage
-A Cloud-based File Storage System built by Team Avengers using React and Firebase
->>>>>>> 7b42a1686d792bfe9891cbaf1c8bd06b3498933b
-
-## Supabase Backend Setup
-
-This project uses Supabase for its backend services.
-
-### Database Tables
-- A `files` table has been created to store file metadata.
-
-### Row Level Security (RLS)
-Row Level Security is enabled on the `files` table with the following policies:
-- Users can only view their own files.
-- Users can only insert files with their own `user_id`.
-- Users can only update their own files.
-- Users can only delete their own files.
+[Choose a License, e.g., MIT]
