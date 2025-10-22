@@ -1,12 +1,13 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    sans-serif; 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #121212; 
-  color: #ffffff; 
+  background-color: #87CEEB; 
+  color: #0f172a;
+  
 }
 
 code {
@@ -15,5 +16,5 @@ code {
 }
 
 #root {
-  min-height: 100vh; 
+  min-height: 100vh;
 }
