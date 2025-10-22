@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom'; // Removed useNavigate import
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import Button from '@mui/material/Button';
@@ -9,11 +9,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
+import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 
 function ProfilePage() {
   const { user } = useAuth();
-  // Removed navigate variable
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [username, setUsername] = useState('');
@@ -67,7 +68,7 @@ function ProfilePage() {
       if (error) throw error;
 
       setMessage('Profile updated successfully!');
-      // Removed navigate call
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -77,89 +78,127 @@ function ProfilePage() {
 
   if (loading) {
     return (
-      <Container component="main" maxWidth="xs" sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'linear-gradient(to bottom, #87CEEB, #a7d8ed)' }}>
         <CircularProgress />
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Your Profile
-        </Typography>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom, #87CEEB, #a7d8ed)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Container component="main" maxWidth="xs">
+        <Paper
+          elevation={6}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '1.5rem',
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold', mb: 3 }}>
+            Your Profile
+          </Typography>
 
-        <Box component="form" onSubmit={handleUpdateProfile} noValidate sx={{ mt: 3 }}>
-          <TextField
-            margin="normal"
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            value={user?.email || ''}
-            disabled
-            InputProps={{
-              readOnly: true,
-            }}
-            variant="filled"
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            value={username || ''}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            id="role"
-            label="Role"
-            name="role"
-            value={role || ''}
-            disabled
-            InputProps={{
-              readOnly: true,
-            }}
-            variant="filled"
-          />
+          <Box component="form" onSubmit={handleUpdateProfile} noValidate sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              value={user?.email || ''}
+              disabled
+              variant="filled"
+              sx={{
+                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.4)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
+                input: { color: 'white' }, label: { color: '#ccc' },
+                '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#ddd', color: '#ddd' },
+                '& .MuiInputLabel-root.Mui-disabled': { color: '#aaa' }
+              }}
+              InputProps={{ readOnly: true }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              value={username || ''}
+              onChange={(e) => setUsername(e.target.value)}
+              variant="filled"
+              sx={{
+                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
+                input: { color: 'white' }, label: { color: '#ccc' },
+              }}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              id="role"
+              label="Role"
+              name="role"
+              value={role || ''}
+              disabled
+              variant="filled"
+              sx={{
+                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.4)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
+                input: { color: 'white' }, label: { color: '#ccc' },
+                 '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#ddd', color: '#ddd' },
+                 '& .MuiInputLabel-root.Mui-disabled': { color: '#aaa' }
+              }}
+              InputProps={{ readOnly: true }}
+            />
 
-          {message && <Alert severity="success" sx={{ width: '100%', mt: 2 }}>{message}</Alert>}
-          {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
+            {message && <Alert severity="success" sx={{ width: '100%', mt: 2, borderRadius: '0.5rem' }}>{message}</Alert>}
+            {error && <Alert severity="error" sx={{ width: '100%', mt: 2, borderRadius: '0.5rem' }}>{error}</Alert>}
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            disabled={updating}
-            sx={{ mt: 3, mb: 2 }}
-          >
-            {updating ? 'Saving...' : 'Update Profile'}
-          </Button>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              disabled={updating}
+              sx={{
+                mt: 3,
+                mb: 2,
+                borderRadius: '0.75rem',
+                py: 1.5,
+                fontWeight: 'bold',
+                boxShadow: 'lg',
+                '&:hover': { transform: 'scale(1.02)' },
+                transition: 'transform 0.15s',
+              }}
+            >
+              {updating ? <CircularProgress size={24} color="inherit" /> : 'Update Profile'}
+            </Button>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-            <Link component={RouterLink} to="/update-password" variant="body2">
-              Change Password
-            </Link>
-            <Link component={RouterLink} to="/" variant="body2">
-              Back to Dashboard
-            </Link>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mt: 2 }}>
+              <Link component={RouterLink} to="/update-password" variant="body2" sx={{ color: 'text.secondary' }}>
+                Change Password
+              </Link>
+              <Link component={RouterLink} to="/" variant="body2" sx={{ color: 'text.secondary' }}>
+                Back to Dashboard
+              </Link>
+            </Box>
           </Box>
-        </Box>
-      </Box>
-    </Container>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 
