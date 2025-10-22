@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-// --- MUI Imports ---
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
@@ -10,7 +8,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
-// --- End MUI Imports ---
+import Paper from '@mui/material/Paper';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ForgotPassword() {
   const { resetPasswordForEmail } = useAuth();
@@ -36,57 +35,93 @@ function ForgotPassword() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Forgot Password
-        </Typography>
-        <Typography component="p" sx={{ mt: 1, mb: 1, textAlign: 'center' }}>
-          Enter your email address and we will send you a link to reset your password.
-        </Typography>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom, #87CEEB, #a7d8ed)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Container component="main" maxWidth="xs">
+        <Paper
+          elevation={6}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '1.5rem',
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ color: 'text.primary', fontWeight: 'bold', mb: 1 }}>
+            Forgot Password
+          </Typography>
+          <Typography component="p" variant="body2" sx={{ color: 'text.secondary', textAlign: 'center', mb: 3 }}>
+            Enter your email address and we will send you a link to reset your password.
+          </Typography>
 
-        <Box component="form" onSubmit={handlePasswordReset} noValidate sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <Box component="form" onSubmit={handlePasswordReset} noValidate sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              variant="filled"
+              sx={{
+                '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  borderRadius: '0.75rem',
+                  '&:before, &:after': { borderBottom: 'none' },
+                  '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                },
+                input: { color: 'white' },
+                label: { color: '#ccc' },
+              }}
+            />
 
-          {message && <Alert severity="success" sx={{ width: '100%', mt: 1 }}>{message}</Alert>}
-          {error && <Alert severity="error" sx={{ width: '100%', mt: 1 }}>{error}</Alert>}
+            {message && <Alert severity="success" sx={{ width: '100%', mt: 2, borderRadius: '0.5rem' }}>{message}</Alert>}
+            {error && <Alert severity="error" sx={{ width: '100%', mt: 2, borderRadius: '0.5rem' }}>{error}</Alert>}
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            disabled={loading}
-            sx={{ mt: 3, mb: 2 }}
-          >
-            {loading ? 'Sending...' : 'Send Reset Link'}
-          </Button>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              disabled={loading}
+              sx={{
+                mt: 3,
+                mb: 2,
+                borderRadius: '0.75rem',
+                py: 1.5,
+                fontWeight: 'bold',
+                boxShadow: 'lg',
+                '&:hover': { transform: 'scale(1.02)' },
+                transition: 'transform 0.15s',
+              }}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset Link'}
+            </Button>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-            <Link component={RouterLink} to="/login" variant="body2">
-              Back to Login
-            </Link>
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Link component={RouterLink} to="/login" variant="body2" sx={{ color: 'text.secondary' }}>
+                Back to Login
+              </Link>
+            </Box>
           </Box>
-        </Box>
-      </Box>
-    </Container>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 
