@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import Button from '@mui/material/Button';
@@ -14,7 +14,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 function ProfilePage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [username, setUsername] = useState('');
@@ -30,17 +29,17 @@ function ProfilePage() {
         setLoading(true);
         if (!user) return;
 
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('profiles')
           .select('username, role')
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
+        if (fetchError) throw fetchError;
 
         if (data) {
-          setUsername(data.username);
-          setRole(data.role);
+          setUsername(data.username || '');
+          setRole(data.role || '');
         }
       } catch (err) {
         setError(err.message);
@@ -60,12 +59,12 @@ function ProfilePage() {
 
     try {
       setUpdating(true);
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ username: username, role: role })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       setMessage('Profile updated successfully!');
 
@@ -103,7 +102,7 @@ function ProfilePage() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(8px)',
             borderRadius: '1.5rem',
           }}
@@ -123,10 +122,21 @@ function ProfilePage() {
               disabled
               variant="filled"
               sx={{
-                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.4)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
-                input: { color: 'white' }, label: { color: '#ccc' },
-                '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#ddd', color: '#ddd' },
-                '& .MuiInputLabel-root.Mui-disabled': { color: '#aaa' }
+                '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: '0.75rem',
+                  '&:before, &:after': { borderBottom: 'none' },
+                  '&.Mui-disabled': {
+                     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  }
+                },
+                '& .MuiInputBase-input.Mui-disabled': {
+                   WebkitTextFillColor: '#ECEFF1',
+                   color: '#ECEFF1',
+                 },
+                 '& .MuiInputLabel-root.Mui-disabled': {
+                    color: '#B0BEC5'
+                 }
               }}
               InputProps={{ readOnly: true }}
             />
@@ -142,8 +152,15 @@ function ProfilePage() {
               onChange={(e) => setUsername(e.target.value)}
               variant="filled"
               sx={{
-                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
-                input: { color: 'white' }, label: { color: '#ccc' },
+                '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  borderRadius: '0.75rem',
+                  '&:before, &:after': { borderBottom: 'none' },
+                  '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                },
+                input: { color: 'white' },
+                label: { color: '#ccc' },
+                '& label.Mui-focused': { color: 'primary.main' },
               }}
             />
             <TextField
@@ -156,10 +173,21 @@ function ProfilePage() {
               disabled
               variant="filled"
               sx={{
-                '& .MuiFilledInput-root': { backgroundColor: 'rgba(0, 0, 0, 0.4)', borderRadius: '0.75rem', '&:before, &:after': { borderBottom: 'none' }, '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' }, },
-                input: { color: 'white' }, label: { color: '#ccc' },
-                 '& .MuiInputBase-input.Mui-disabled': { WebkitTextFillColor: '#ddd', color: '#ddd' },
-                 '& .MuiInputLabel-root.Mui-disabled': { color: '#aaa' }
+                 '& .MuiFilledInput-root': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: '0.75rem',
+                  '&:before, &:after': { borderBottom: 'none' },
+                   '&.Mui-disabled': {
+                     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  }
+                },
+                 '& .MuiInputBase-input.Mui-disabled': {
+                   WebkitTextFillColor: '#ECEFF1',
+                   color: '#ECEFF1',
+                 },
+                 '& .MuiInputLabel-root.Mui-disabled': {
+                    color: '#B0BEC5'
+                 }
               }}
               InputProps={{ readOnly: true }}
             />
@@ -179,7 +207,7 @@ function ProfilePage() {
                 borderRadius: '0.75rem',
                 py: 1.5,
                 fontWeight: 'bold',
-                boxShadow: 'lg',
+                boxShadow: 3,
                 '&:hover': { transform: 'scale(1.02)' },
                 transition: 'transform 0.15s',
               }}

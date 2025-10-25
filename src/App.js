@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
@@ -10,28 +9,33 @@ import ForgotPassword from './components/ForgotPassword';
 import UpdatePassword from './components/UpdatePassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
+const AnimatedBackground = () => (
+  <div className="background-container">
+    <div className="sun-effect">
+      <div className="sun-center"></div>
+    </div>
+    <div className="cloud cloud-1"></div>
+    <div className="cloud cloud-2"></div>
+    <div className="cloud cloud-3"></div>
+  </div>
+);
+
 function App() {
   return (
     <Router>
-      <div className="App">
+      <AnimatedBackground />
+      <div className="App" style={{ position: 'relative', zIndex: 1 }}>
         <Routes>
-          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/update-password" element={<UpdatePassword />} />
-          
-          {/* Protected Routes */}
           <Route path="/" element={ <ProtectedRoute><Dashboard /></ProtectedRoute> } />
           <Route path="/profile" element={ <ProtectedRoute><ProfilePage /></ProtectedRoute> } />
-          
-          {/* --- THIS LINE IS UPDATED --- */}
-          <Route 
-            path="/admin-dashboard" 
-            element={ <ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute> } 
+          <Route
+            path="/admin-dashboard"
+            element={ <ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute> }
           />
-
-          {/* Redirect */}
           <Route path="/dashboard" element={<Navigate to="/" />} />
         </Routes>
       </div>

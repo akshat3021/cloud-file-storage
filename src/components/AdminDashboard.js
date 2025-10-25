@@ -22,6 +22,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
+import WbSunnyIcon from '@mui/icons-material/WbSunny';
 
 function AdminDashboard() {
   const { user, signOut } = useAuth();
@@ -67,6 +68,7 @@ function AdminDashboard() {
       navigate('/login');
     } catch (error) {
       console.error('Error logging out:', error.message);
+      setError("Failed to log out.");
     }
   };
 
@@ -96,45 +98,70 @@ function AdminDashboard() {
      }
   };
 
-  if (loading) { return <Container sx={{mt:4, textAlign: 'center'}}><CircularProgress /></Container>; }
-  if (error) {
-      return (
-          <Container sx={{mt:4}}>
-              <Alert severity="error">{error}</Alert>
-              <Button onClick={handleLogout} sx={{mt: 2}}>Logout</Button>
-          </Container>
-      );
-  }
-  if (!isAdmin) {
+  if (loading) {
+     return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'linear-gradient(to bottom, #87CEEB, #a7d8ed)' }}>
+          <CircularProgress />
+        </Box>
+     );
+   }
+
+   if (error || !isAdmin) {
        return (
-           <Container sx={{mt: 4}}>
-               <Alert severity="warning">Access Denied. You are not an administrator.</Alert>
+         <Box sx={{ flexGrow: 1, backgroundColor: 'transparent', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <AppBar position="static" elevation={0} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)', boxShadow: 3, borderRadius: '1.5rem', margin: '1.25rem auto', width: { xs: 'calc(100% - 2rem)', md: 'calc(100% - 5rem)', lg: 'calc(100% - 10rem)'}, maxWidth: '960px', borderBottom: '1px solid rgba(255, 255, 255, 0.3)', color: 'text.primary' }}>
+               <Toolbar sx={{ justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                     <WbSunnyIcon sx={{ color: 'primary.main', fontSize: 32 }} />
+                     <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: 'text.primary' }}>Admin Panel</Typography>
+                  </Box>
+                  <Button color="inherit" onClick={handleLogout}>Logout</Button>
+               </Toolbar>
+            </AppBar>
+            <Container sx={{ mt: 4, flexGrow: 1 }}>
+               <Alert severity={error ? "error" : "warning"}>{error || "Access Denied. You are not an administrator."}</Alert>
                <Button onClick={() => navigate('/')} sx={{mt: 2}}>Go to Dashboard</Button>
-               <Button onClick={handleLogout} sx={{mt: 2, ml: 1}}>Logout</Button>
-           </Container>
+            </Container>
+             <Box component="footer" sx={{ textAlign: 'center', py: 2, borderTop: '1px solid rgba(255, 255, 255, 0.3)', mt: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(5px)' }}>
+                <Typography variant="caption" color="text.secondary">© 2025 Sunny Storage</Typography>
+             </Box>
+         </Box>
        );
-  }
+   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Admin Dashboard
-          </Typography>
-          <Button color="inherit" onClick={handleLogout}>Logout</Button>
+    <Box sx={{ flexGrow: 1, backgroundColor: 'transparent', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static" elevation={0} sx={{
+         backgroundColor: 'rgba(255, 255, 255, 0.4)',
+         backdropFilter: 'blur(10px)',
+         boxShadow: 3,
+         borderRadius: '1.5rem',
+         margin: '1.25rem auto',
+         width: { xs: 'calc(100% - 2rem)', md: 'calc(100% - 5rem)', lg: 'calc(100% - 10rem)'},
+         maxWidth: '960px',
+         borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+         color: 'text.primary',
+        }}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <WbSunnyIcon sx={{ color: 'primary.main', fontSize: 32 }} />
+                <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                    Admin Dashboard
+                </Typography>
+            </Box>
+            <Button color="inherit" onClick={handleLogout}>Logout</Button>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1, backgroundColor: 'transparent' }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 3 }}>
           User Management
         </Typography>
 
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} elevation={3} sx={{ borderRadius: '1rem', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}>
           <Table sx={{ minWidth: 650 }} aria-label="user management table">
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ '& th': { fontWeight: 'bold', color: 'text.primary' } }}>
                 <TableCell>User ID</TableCell>
                 <TableCell>Username</TableCell>
                 <TableCell>Role</TableCell>
@@ -146,7 +173,7 @@ function AdminDashboard() {
                 users.map((userItem) => (
                   <TableRow
                     key={userItem.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)'} }}
                   >
                     <TableCell component="th" scope="row">
                       {userItem.id}
@@ -159,7 +186,8 @@ function AdminDashboard() {
                           value={userItem.role}
                           onChange={(e) => handleRoleChange(userItem.id, e.target.value)}
                           size="small"
-                          sx={{ minWidth: 100, mr: 1 }}
+                          sx={{ minWidth: 100, mr: 1, borderRadius: '0.5rem', backgroundColor: 'rgba(255,255,255,0.5)' }}
+                          variant="outlined"
                         >
                           <MenuItem value="user">User</MenuItem>
                           <MenuItem value="admin">Admin</MenuItem>
@@ -187,6 +215,10 @@ function AdminDashboard() {
           </Table>
         </TableContainer>
       </Container>
+
+      <Box component="footer" sx={{ textAlign: 'center', py: 2, borderTop: '1px solid rgba(255, 255, 255, 0.3)', mt: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(5px)' }}>
+          <Typography variant="caption" color="text.secondary">© 2025 Sunny Storage. All Rights Reserved.</Typography>
+      </Box>
     </Box>
   );
 }

@@ -71,7 +71,7 @@ function Login() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom, #87CEEB, #a7d8ed)',
+        // No specific background image here, relies on global background
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -86,7 +86,8 @@ function Login() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            // Use theme's paper background (semi-transparent white)
+            backgroundColor: 'background.paper', // Or explicitly 'rgba(255, 255, 255, 0.8)'
             backdropFilter: 'blur(8px)',
             borderRadius: '1.5rem',
           }}
@@ -110,17 +111,8 @@ function Login() {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              variant="filled"
-              sx={{
-                '& .MuiFilledInput-root': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  borderRadius: '0.75rem',
-                  '&:before, &:after': { borderBottom: 'none' },
-                  '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
-                },
-                input: { color: 'white' },
-                label: { color: '#ccc' },
-              }}
+              // Use outlined variant to contrast with paper background
+              variant="outlined"
             />
             <TextField
               margin="normal"
@@ -133,17 +125,8 @@ function Login() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              variant="filled"
-               sx={{
-                '& .MuiFilledInput-root': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                  borderRadius: '0.75rem',
-                  '&:before, &:after': { borderBottom: 'none' },
-                   '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
-                },
-                input: { color: 'white' },
-                label: { color: '#ccc' },
-              }}
+              // Use outlined variant
+              variant="outlined"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -152,7 +135,7 @@ function Login() {
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
-                      sx={{ color: '#ccc' }}
+                      sx={{ color: 'text.secondary' }} // Adjust icon color if needed
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -175,7 +158,7 @@ function Login() {
                 borderRadius: '0.75rem',
                 py: 1.5,
                 fontWeight: 'bold',
-                boxShadow: 'lg',
+                boxShadow: 3, // Use theme shadow
                 '&:hover': { transform: 'scale(1.02)' },
                 transition: 'transform 0.15s',
               }}

@@ -1,13 +1,13 @@
 body {
+  background-color: transparent !important;
   margin: 0;
   font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif; 
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #87CEEB; 
   color: #0f172a;
-  
+  overflow-x: hidden;
 }
 
 code {
@@ -17,4 +17,105 @@ code {
 
 #root {
   min-height: 100vh;
+  background-color: transparent !important;
+}
+
+.App {
+   background-color: transparent !important;
+   position: relative;
+   z-index: 1;
+}
+
+@keyframes sunRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes cloudMove {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(150vw); }
+}
+
+@keyframes sunbeam {
+  0%, 100% { transform: scaleY(1) rotate(-10deg); opacity: 0.15; }
+  50% { transform: scaleY(1.2) rotate(0deg); opacity: 0.25; }
+}
+
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #87CEEB, #a7d8ed);
+}
+
+.sun-effect {
+  position: absolute;
+  /* --- ADJUSTED POSITION --- */
+  top: -25%;
+  left: 25%;
+  /* ----------------------- */
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 250, 205, 0.6) 0%, rgba(253, 230, 138, 0.3) 40%, rgba(251, 191, 36, 0) 70%);
+  animation: sunRotate 120s linear infinite;
+  filter: blur(50px);
+}
+
+.sun-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.8;
+  filter: blur(10px);
+}
+
+.sunbeam-effect {
+  position: absolute;
+  top: -5%;
+  left: -20%;
+  width: 150%;
+  height: 150%;
+  animation: sunbeam 8s ease-in-out infinite;
+  opacity: 0.2;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 60%);
+  transform-origin: 25% 25%;
+}
+
+.cloud {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 9999px;
+  filter: blur(30px);
+}
+
+.cloud-1 {
+  top: 10%;
+  width: 320px;
+  height: 160px;
+  animation: cloudMove 90s linear infinite;
+}
+
+.cloud-2 {
+  top: 30%;
+  width: 384px;
+  height: 192px;
+  animation: cloudMove 150s linear infinite -45s;
+}
+
+.cloud-3 {
+  top: 5%;
+  width: 288px;
+  height: 144px;
+  animation: cloudMove 200s linear infinite -90s;
 }
