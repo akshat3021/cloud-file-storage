@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom'; // Remove BrowserRouter
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
@@ -22,7 +22,7 @@ const AnimatedBackground = () => (
 
 function App() {
   return (
-    <Router>
+    <> {/* Use a Fragment instead of Router */}
       <AnimatedBackground />
       <div className="App" style={{ position: 'relative', zIndex: 1 }}>
         <Routes>
@@ -39,7 +39,7 @@ function App() {
           <Route path="/dashboard" element={<Navigate to="/" />} />
         </Routes>
       </div>
-    </Router>
+    </>
   );
 }
 
