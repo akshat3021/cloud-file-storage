@@ -63,8 +63,14 @@ function Dashboard() {
     const loadProfile = async () => {
       if (user) {
         setFileError(null);
-        try { const userProfile = await getUserProfile(user); setProfile(userProfile); }
-        catch (profileError) { console.error("Error loading profile:", profileError); showSnackbar("Failed to load user profile.", 'error'); }
+        try { 
+          const userProfile = await getUserProfile(user); 
+          setProfile(userProfile); 
+        }
+        catch (profileError) { 
+          console.error("Error loading profile:", profileError); 
+          showSnackbar("Failed to load user profile.", 'error'); 
+        }
       }
     };
     loadProfile();
@@ -192,15 +198,25 @@ function Dashboard() {
             </Box>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }}>
                  <Link component={RouterLink} to="/" color="inherit" sx={{ textDecoration: 'none', fontWeight: 500 }}>My Files</Link>
-                 <Link component="button" onClick={handleComingSoon('Shared Files')} color="text.secondary" sx={{ textDecoration: 'none', '&:hover': { color: 'text.primary' }, cursor: 'pointer', background: 'none', border: 'none', padding: 0, font: 'inherit' }}>Shared</Link>
-                 <Link component="button" onClick={handleComingSoon('Trash Bin')} color="text.secondary" sx={{ textDecoration: 'none', '&:hover': { color: 'text.primary' }, cursor: 'pointer', background: 'none', border: 'none', padding: 0, font: 'inherit' }}>Trash</Link>
+                 <Link component="button" onClick={handleComingSoon('Shared Files')} color="text.secondary" sx={{ textDecoration: 'none', '&:hover': { color: 'text.primary' }, cursor: 'pointer', background: 'none', border: 'none', padding: 0, font: 'inherit', fontSize: 'inherit' }}>Shared</Link>
+                 <Link component="button" onClick={handleComingSoon('Trash Bin')} color="text.secondary" sx={{ textDecoration: 'none', '&:hover': { color: 'text.primary' }, cursor: 'pointer', background: 'none', border: 'none', padding: 0, font: 'inherit', fontSize: 'inherit' }}>Trash</Link>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                  <TextField placeholder="Search files..." size="small" variant="outlined" value={searchTerm} onChange={handleSearchChange} sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiOutlinedInput-root': { borderRadius: '0.5rem', backgroundColor: 'rgba(255, 255, 255, 0.4)', fieldset: { borderColor: 'transparent' }, '&:hover fieldset': { borderColor: 'primary.main' }, }, input: { color: 'text.primary' } }} InputProps={{ startAdornment: ( <InputAdornment position="start"><SearchIcon sx={{ color: 'text.secondary' }}/></InputAdornment> ), }} />
                  <Button variant="contained" color="primary" onClick={() => document.getElementById('file-input-hidden')?.click()} sx={{ boxShadow: 'lg', '&:hover': { transform: 'scale(1.05)'}, transition: 'transform 0.2s' }} > Upload File </Button>
-                 <IconButton onClick={() => navigate('/profile')} sx={{ p: 0 }} >
-                    <Avatar sx={{ bgcolor: 'secondary.main', width: 40, height: 40, border: '2px solid rgba(255, 255, 255, 0.5)' }}>{(profile && profile.username) ? profile.username[0].toUpperCase() : <PersonIcon />} </Avatar>
+                 
+                 <IconButton
+                    onClick={() => navigate('/profile')}
+                    sx={{ p: 0 }}
+                 >
+                    <Avatar 
+                      sx={{ bgcolor: 'secondary.main', width: 40, height: 40, border: '2px solid rgba(255, 255, 255, 0.5)' }}
+                      src={profile?.avatar_url || undefined} 
+                    >
+                        {!(profile?.avatar_url) && (profile?.username ? profile.username[0].toUpperCase() : <PersonIcon />)}
+                    </Avatar>
                  </IconButton>
+
                   <input id="file-input-hidden" type="file" hidden onChange={handleFileChange} />
                   <Button color="inherit" onClick={handleLogout}>Logout</Button>
             </Box>
