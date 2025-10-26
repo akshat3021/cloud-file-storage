@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Use the hook
 
   useEffect(() => {
     const getSession = async () => {
@@ -17,14 +19,21 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null);
+        // Check the event type
+        if (_event === 'PASSWORD_RECOVERY') {
+          // If it's a password recovery, navigate to the update page
+          navigate('/update-password');
+        } else {
+          // Otherwise, just set the user session
+          setUser(session?.user ?? null);
+        }
       }
     );
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]); // Add navigate as a dependency
 
   async function updatePassword(newPassword) {
     const { data, error } = await supabase.auth.updateUser({
