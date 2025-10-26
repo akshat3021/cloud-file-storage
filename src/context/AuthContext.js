@@ -36,11 +36,13 @@ export function AuthProvider({ children }) {
 
   async function resetPasswordForEmail(email) {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'http://localhost:3000/update-password',
+     
+      redirectTo: `${window.location.origin}/update-password`, 
     });
     if (error) throw error;
     return data;
   }
+  
 
   async function signUp(email, password, username, adminCode) {
     const SECRET_ADMIN_CODE = "SUPER_SECRET_ADMIN_KEY";
