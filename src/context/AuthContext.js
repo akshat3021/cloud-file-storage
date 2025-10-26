@@ -34,16 +34,13 @@ export function AuthProvider({ children }) {
     return data;
   }
 
-  // --- THIS FUNCTION IS UPDATED ---
   async function resetPasswordForEmail(email) {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      // Use the current window's origin + the correct path
       redirectTo: `${window.location.origin}/update-password`,
     });
     if (error) throw error;
     return data;
   }
-  // --- END OF UPDATE ---
 
   async function signUp(email, password, username, adminCode) {
     const SECRET_ADMIN_CODE = "SUPER_SECRET_ADMIN_KEY";
